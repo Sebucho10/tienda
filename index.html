@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tienda DE LA VERA & SUAREZ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --blanco: #ffffff;
+      --gris-fondo: #f2f2f7;
+      --gris-texto: #1c1c1e;
+      --acento: #007aff;
+      --borde: rgba(200, 200, 200, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top left, #f7f7fa, #e6e6ec);
+      color: var(--gris-texto);
+      padding-top: 80px;
+      min-height: 100vh;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--borde);
+      padding: 20px 40px;
+      text-align: center;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--gris-texto);
+      font-weight: 600;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: auto;
+      padding: 40px 20px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      color: var(--gris-texto);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--borde);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin-bottom: 15px;
+    }
+
+    .product-name {
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .price {
+      font-size: 1rem;
+      color: var(--acento);
+      font-weight: 500;
+    }
+
+    #addProductBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border-radius: 12px;
+      background: #007aff;
+      color: white;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      z-index: 1001;
+    }
+
+    #productModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(3px);
+      justify-content: center;
+      align-items: center;
+      z-index: 1002;
+    }
+
+    #productForm {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    #productForm input[type="text"],
+    #productForm input[type="file"] {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    #productForm button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #productForm button[type="submit"] {
+      background-color: #007aff;
+      color: white;
+    }
+
+    #productForm button[type="button"] {
+      background-color: #ccc;
+      color: #333;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Tienda DE LA VERA & SUAREZ</h1>
+  </header>
+
+  <div class="container">
+    <!-- Productos se generan aquí -->
+  </div>
+
+  <button id="addProductBtn">+ Agregar Producto</button>
+
+  <!-- Modal -->
+  <div id="productModal">
+    <form id="productForm">
+      <h2>Agregar / Editar Producto</h2>
+      <input type="text" id="productName" placeholder="Nombre" required />
+      <input type="text" id="productPrice" placeholder="Precio por kilo" required />
+      <input type="file" id="productImage" accept="image/*" />
+      <input type="hidden" id="productIndex" />
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" onclick="closeModal()">Cancelar</button>
+        <button type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const modal = document.getElementById('productModal');
+    const form = document.getElementById('productForm');
+    const nameInput = document.getElementById('productName');
+    const priceInput = document.getElementById('productPrice');
+    const imageInput = document.getElementById('productImage');
+    const indexInput = document.getElementById('productIndex');
+    const container = document.querySelector('.container');
+
+    // Productos iniciales completos con las imágenes de Unsplash
+    let products = [
+      { name: "Arroz", price: "$0.77 / kg", image: "arroz.jpg" },
+      { name: "Cebolla", price: "$0.77 / kg", image: "cebolla.jpg" },
+      { name: "Papa", price: "$0.91 / kg", image: "papas.jpg" },
+      { name: "Pimiento", price: "$1.30 / kg", image: "pimiento.jfif" },
+      { name: "Tomate", price: "$1.63 / kg", image: "tomate.jpeg" },
+      { name: "Zanahoria", price: "$1.00 / kg", image: "zanahoria.jpg" },
+      { name: "Alberga con cáscara", price: "$3.13 / kg", image: "alberjita.jpeg" },
+      { name: "Veterana", price: "$1.00 / kg", image: "beteraba.jpg" },
+      { name: "Pollo", price: "$3.34 / kg", image: "pollo.jfif" }
+    ];
+
+    document.getElementById('addProductBtn').addEventListener('click', () => {
+      openModal();
+    });
+
+    function openModal(index = null) {
+      modal.style.display = 'flex';
+      if (index !== null) {
+        const p = products[index];
+        nameInput.value = p.name;
+        priceInput.value = p.price;
+        indexInput.value = index;
+        imageInput.value = ''; // No podemos asignar valor a input file por seguridad
+      } else {
+        form.reset();
+        indexInput.value = '';
+      }
+    }
+
+    function closeModal() {
+      modal.style.display = 'none';
+      form.reset();
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = nameInput.value.trim();
+      const price = priceInput.value.trim();
+      const index = indexInput.value;
+      const file = imageInput.files[0];
+
+      if (!name || !price) return alert("Nombre y precio son obligatorios.");
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const imageData = event.target.result;
+          saveProduct(name, price, imageData, index);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        if (index) {
+          // Editar sin cambiar imagen
+          saveProduct(name, price, products[index].image, index);
+        } else {
+          alert("Debe seleccionar una imagen para el producto.");
+        }
+      }
+    });
+
+    function saveProduct(name, price, imageData, index) {
+      if (index) {
+        products[index] = { name, price, image: imageData };
+      } else {
+        products.push({ name, price, image: imageData });
+      }
+      renderProducts();
+      closeModal();
+    }
+
+    function deleteProduct(index) {
+      if (confirm('¿Seguro que deseas eliminar este producto?')) {
+        products.splice(index, 1);
+        renderProducts();
+      }
+    }
+
+    function renderProducts() {
+      container.innerHTML = '';
+      products.forEach((p, i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${p.image}" alt="${p.name}">
+          <div class="product-name">${p.name}</div>
+          <div class="price">${p.price}</div>
+          <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
+            <button type="button" onclick="openModal(${i})" style="padding: 6px 12px; border-radius: 6px; border: none; background: #007aff; color: white;">Editar</button>
+            <button type="button" onclick="deleteProduct(${i})" style="padding: 6px 12px; border-radius: 6px; border: none; background: #ff3b30; color: white;">Eliminar</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Inicial render
+    renderProducts();
+
+    // Exponer funciones para botones dentro de HTML
+    window.openModal = openModal;
+    window.deleteProduct = deleteProduct;
+    window.closeModal = closeModal;
+  </script>
+
+</body>
+</html>
